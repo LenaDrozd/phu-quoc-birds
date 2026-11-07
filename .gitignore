@@ -1,0 +1,8 @@
+# Raw eBird downloads must not be published (eBird terms of use)
+raw/
+ebd_*.txt
+*_sampling.txt
+*.zip
+__pycache__/
+.DS_Store
+Thumbs.db

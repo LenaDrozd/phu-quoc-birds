@@ -1,0 +1,393 @@
+<title>Птицы Фукуока</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Phu Quoc birds by month: where and how often each species was recorded in eBird.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a classic reference map beside a field-guide list. Sea, land, red pins sized by survey effort; serif italics for water and Latin names, as on printed maps. */
+:root{
+  --page:#f7f9fa; --card:#ffffff; --ink:#1e2a33; --muted:#5b6a74; --line:#dde4e8;
+  --sea:#cfe4f0; --sea-ink:#4d7891; --land:#e6efdf; --land-edge:#8fa889; --forest-ink:#5f7a58;
+  --pin:#c4483a; --pin-ink:#ffffff; --empty:#9aa7ae; --halo:rgba(255,255,255,.85);
+  --res:#2f6b3a; --res-bg:#e1efe0; --sum:#8a5a12; --sum-bg:#f6ead3; --win:#2c5f86; --win-bg:#dfeaf4; --meter:#dfe6ea;
+  --display:"PT Serif", Georgia, "Times New Roman", serif;
+  --body:"PT Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#141a1f; --card:#1b232a; --ink:#e3e8eb; --muted:#9aa8b2; --line:#2b353d;
+  --sea:#1a2c3a; --sea-ink:#7fa6be; --land:#26332a; --land-edge:#4f6650; --forest-ink:#93ab8d;
+  --pin:#e0695a; --pin-ink:#1a0f0d; --empty:#6b7880; --halo:rgba(20,26,31,.85);
+  --res:#9fd0a4; --res-bg:#23362a; --sum:#e8c17a; --sum-bg:#3a2f1c; --win:#9cc4e3; --win-bg:#1f3242; --meter:#2b353d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#141a1f; --card:#1b232a; --ink:#e3e8eb; --muted:#9aa8b2; --line:#2b353d;
+  --sea:#1a2c3a; --sea-ink:#7fa6be; --land:#26332a; --land-edge:#4f6650; --forest-ink:#93ab8d;
+  --pin:#e0695a; --pin-ink:#1a0f0d; --empty:#6b7880; --halo:rgba(20,26,31,.85);
+  --res:#9fd0a4; --res-bg:#23362a; --sum:#e8c17a; --sum-bg:#3a2f1c; --win:#9cc4e3; --win-bg:#1f3242; --meter:#2b353d; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{background:var(--page);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.5;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 40px}
+.wrap[data-lang="ru"] .en,.wrap[data-lang="en"] .ru{display:none}
+.wrap{max-width:1200px;margin:0 auto;display:grid;gap:20px}
+header{display:grid;gap:8px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,42px);line-height:1.08;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0;line-height:1.2}
+.langs{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.langs button{font:700 13px var(--body);letter-spacing:.04em;color:var(--muted);background:transparent;border:0;padding:5px 12px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--ink);color:var(--page)}
+.langs button:focus-visible{outline:2px solid var(--pin);outline-offset:-2px}
+.sub{color:var(--muted);margin:0;max-width:66ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--muted)}
+.legend>span{display:inline-flex;align-items:center;gap:7px}
+.chip{display:inline-flex;align-items:center;font:700 11.5px var(--body);letter-spacing:.02em;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.chip.resident{background:var(--res-bg);color:var(--res)}
+.chip.winter{background:var(--win-bg);color:var(--win)}
+.dot{border-radius:50%;background:var(--pin);display:inline-block;border:2px solid var(--card);box-shadow:0 0 0 1px var(--line)}
+.dot.s{width:10px;height:10px}.dot.l{width:20px;height:20px}
+.dot.e{width:10px;height:10px;background:transparent;border:2px solid var(--empty);box-shadow:none}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
+.mapcol{position:sticky;top:12px;display:grid;gap:12px}
+@media (max-width:900px){.mapcol{position:static}}
+.mapbox{position:relative;background:var(--sea);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+svg.map{display:block;width:100%;height:auto;max-height:84vh}
+.island{fill:var(--land);stroke:var(--land-edge);stroke-width:1;stroke-linejoin:round}
+.forestlbl{font:italic 13px var(--display);fill:var(--forest-ink);letter-spacing:.03em}
+.sealbl{font:italic 16px var(--display);fill:var(--sea-ink);letter-spacing:.06em}
+.spot{cursor:pointer;outline:none}
+.spot .ring{fill:var(--pin);stroke:var(--card);stroke-width:2;fill-opacity:.92}
+.spot.empty .ring{fill:var(--card);stroke:var(--empty);stroke-width:1.6;fill-opacity:1}
+.spot .num{font:700 10.5px var(--body);fill:var(--pin-ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.spot .lbl{font:400 12px var(--body);fill:var(--ink);paint-order:stroke;stroke:var(--halo);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.spot .halo{fill:none;stroke:var(--ink);stroke-width:2;opacity:0}
+.spot:hover .ring,.spot:focus-visible .ring{stroke:var(--ink)}
+.spot.sel .halo,.spot.hl .halo{opacity:.8}
+.spot:focus-visible .halo{opacity:1}
+svg.dim .spot:not(.hl):not(.sel){opacity:.22}
+.scale line{stroke:var(--ink);stroke-width:1.3}
+.scale text{font:11px var(--body);fill:var(--ink)}
+
+.tip{position:absolute;z-index:5;width:310px;max-width:calc(100% - 16px);background:var(--card);border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 10px 28px rgba(15,30,45,.18);padding:12px;pointer-events:none;display:grid;gap:8px}
+.tip h3,.spotpanel h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0;line-height:1.2}
+.meta{font-size:12.5px;color:var(--muted)}
+.rows{display:grid;gap:6px}
+.row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center}
+.row img{width:48px;height:36px;object-fit:cover;border-radius:3px;display:block}
+.row .nm{font-weight:700;font-size:14px;display:block;line-height:1.2}
+.row i{font-family:var(--display);font-size:13px;color:var(--muted);display:block;line-height:1.2}
+.row .k{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tip .row{grid-template-columns:38px minmax(0,1fr) auto}
+.tip .row img{width:38px;height:28px}
+.more,.hint{font-size:13px;color:var(--muted);margin:0}
+
+.spotpanel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:10px}
+.spotpanel .rows{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 16px}
+.spotpanel button.row{all:unset;cursor:pointer;display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;border-radius:4px}
+.spotpanel button.row:focus-visible{outline:2px solid var(--pin);outline-offset:2px}
+.panelhead{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.x{all:unset;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 6px;border-radius:4px}
+.x:hover,.x:focus-visible{color:var(--ink);background:var(--line)}
+
+.listcol{display:grid;gap:12px;min-width:0}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filters button{font:400 14px var(--body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 12px;cursor:pointer}
+.filters button:hover{border-color:var(--muted)}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--page);border-color:var(--ink)}
+.filters button:focus-visible{outline:2px solid var(--pin);outline-offset:2px}
+.filters button small{opacity:.7;font-size:12px;margin-left:3px}
+.count{font-size:13.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.bird{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:grid;grid-template-rows:auto 1fr;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+.bird:hover{border-color:var(--muted)}
+.bird:focus-visible{outline:2px solid var(--pin);outline-offset:2px}
+.bird.on{border-color:var(--pin);box-shadow:0 0 0 2px var(--pin)}
+.ph{position:relative;aspect-ratio:4/3;max-width:100%;background:var(--line)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .chips{position:absolute;left:8px;top:8px;display:flex;gap:4px}
+.ph .chips .chip{box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.bd{padding:9px 11px 11px;display:grid;gap:5px;align-content:start}
+.bd h3{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.2;margin:0;text-wrap:balance}
+.bd .lat{font-family:var(--display);font-style:italic;color:var(--muted);font-size:14.5px;margin-top:-3px}
+.bd .alt{font-size:12.5px;color:var(--muted);margin-top:-4px}
+.freq{display:grid;gap:3px}
+.freq .bar{height:6px;border-radius:3px;background:var(--meter);overflow:hidden}
+.freq .bar i{display:block;height:100%;background:var(--pin);border-radius:3px}
+.freq span{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.freq b{color:var(--ink)}
+.where{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12.5px;color:var(--muted)}
+.where button{font:400 12.5px var(--body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:4px;padding:0 6px;cursor:pointer}
+.where button:hover,.where button:focus-visible{border-color:var(--pin);outline:none}
+.credit{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.credit a{color:inherit}
+
+.extra{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:16px}
+.extra .rows{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 18px}
+.extra .row{grid-template-columns:48px minmax(0,1fr)}
+.extra .note{font-size:12.5px;color:var(--muted);display:block}
+footer{font-size:13px;color:var(--muted);display:grid;gap:6px;max-width:92ch;border-top:1px solid var(--line);padding-top:12px}
+footer p{margin:0}
+footer a{color:inherit}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.chip.summer{background:var(--sum-bg);color:var(--sum)}
+.months{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch}
+.months button{font:400 14px var(--body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 0 3px;width:50px;cursor:pointer;display:grid;gap:2px;justify-items:center;align-content:space-between}
+.months button.wide{width:auto;padding:4px 12px}
+.months button:hover{border-color:var(--muted)}
+.months button[aria-pressed="true"]{background:var(--ink);color:var(--page);border-color:var(--ink)}
+.months button:focus-visible{outline:2px solid var(--pin);outline-offset:2px}
+.months .eff{height:18px;width:22px;display:flex;align-items:flex-end;justify-content:center}
+.months .eff i{display:block;width:100%;background:var(--pin);opacity:.55;border-radius:2px 2px 0 0}
+.months button[aria-pressed="true"] .eff i{background:var(--page);opacity:.8}
+.window{margin:0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.others{margin:0;font-size:14px;color:var(--muted)}
+.others button{font:400 14px var(--body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px 12px;cursor:pointer;margin-left:6px}
+.others button:hover,.others button:focus-visible{border-color:var(--pin);outline:none}
+@media (max-width:560px){.months button{width:calc((100% - 20px)/6)}.months button.wide{width:100%}}
+</style>
+
+<div class="wrap" data-lang="ru" id="wrap">
+  <header>
+    <div class="top">
+      <h1><span class="ru">Птицы Фукуока</span><span class="en">Phu Quoc Birds</span></h1>
+      <div class="langs" role="group" aria-label="Язык / Language">
+        <button type="button" id="lang-ru" data-lang="ru" aria-pressed="true">RU</button>
+        <button type="button" id="lang-en" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+    <p class="sub"><span class="ru">Выберите месяц поездки — карта покажет, каких птиц и где отмечали на острове в это время по наблюдениям eBird за три года (__LISTS__ списков). Процент у вида — в какой доле полных списков его отметили. Наведите на точку или нажмите на неё; нажмите на птицу, чтобы увидеть её точки.</span><span class="en">Pick the month of your trip: the map shows which birds were recorded on the island at that time, and where, from three years of eBird checklists (__LISTS__ checklists). The percentage is the share of complete checklists that report the species. Hover over or tap a point; tap a bird to see its points.</span></p>
+    <div class="months" role="group" id="months"></div>
+    <p class="window" id="window"></p>
+    <div class="legend">
+      <span><i class="dot s"></i><i class="dot l"></i><span class="ru">точка наблюдений: чем больше, тем больше списков; число — сколько видов</span><span class="en">survey point: bigger means more checklists; the number is species count</span></span>
+      <span><i class="dot e"></i><span class="ru">в этот месяц наблюдений не было</span><span class="en">no checklists in this month</span></span>
+      <span><b class="chip resident"><span class="ru">круглый год</span><span class="en">resident</span></b></span>
+      <span><b class="chip winter"><span class="ru">зимует или пролётом</span><span class="en">winter / passage</span></b></span>
+      <span><b class="chip summer"><span class="ru">гнездится летом</span><span class="en">summer visitor</span></b></span>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="mapcol">
+      <div class="mapbox" id="mapbox">
+        __SVG__
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <section class="spotpanel" id="spotpanel" aria-live="polite"></section>
+    </div>
+
+    <div class="listcol">
+      <div class="filters" role="group" id="tiers"></div>
+      <div class="filters" role="group" id="stats"></div>
+      <div class="grid" id="grid"></div>
+      <p class="others" id="others"></p>
+    </div>
+  </div>
+
+  <footer>
+    <p><span class="ru">Данные: eBird Basic Dataset, версия EBD_relSep-2026, Cornell Lab of Ornithology, 2026. Наблюдения на Фукуоке и соседних островах с ноября 2023 по сентябрь 2026. «Месяц» — календарный месяц плюс по полмесяца с каждой стороны: наблюдателей на острове мало, и широкое окно даёт более устойчивые цифры. Списки нескольких наблюдателей одной прогулки посчитаны один раз. Не показаны птицы из сафари-парка Vinpearl, ночные виды и завезённые попугаи. Это производные данные; они распространяются на условиях eBird и не одобрены Cornell Lab of Ornithology.</span><span class="en">Data: eBird Basic Dataset, version EBD_relSep-2026, Cornell Lab of Ornithology, 2026. Checklists from Phu Quoc and nearby islets, November 2023 – September 2026. A "month" is the calendar month plus half a month on each side: few people go birding here, and a wider window gives steadier numbers. Shared checklists are counted once. Birds from Vinpearl Safari, nocturnal species and escaped parrots are left out. These are derived data, shared under the eBird terms of use and not endorsed by the Cornell Lab of Ornithology.</span></p>
+    <p><span class="ru">Большинство списков сделано в отелях и на побережье. Лесной север и нацпарк обследованы мало, поэтому лесные виды встречаются чаще, чем говорят проценты. Точки — группы соседних мест наблюдений; списки без точной точки («весь остров») учтены в процентах, но не на карте. Русские названия многих тропических видов не устоялись — опорное латинское.</span><span class="en">Most checklists come from hotels and the coast. The forested north and the national park are barely surveyed, so forest species are commoner than the percentages suggest. Points group nearby locations; checklists without a precise location ("whole island") count in the percentages but not on the map.</span></p>
+    <p><span class="ru">Контур острова: geoBoundaries (CC BY 4.0). Фото: Wikimedia Commons, автор и лицензия указаны в карточках. Код: <a href="__REPO__" target="_blank" rel="noopener">GitHub</a>.</span><span class="en">Island outline: geoBoundaries (CC BY 4.0). Photos: Wikimedia Commons, author and licence on each card. Code: <a href="__REPO__" target="_blank" rel="noopener">GitHub</a>.</span></p>
+  </footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+const P = DATA.points, BIRDS = DATA.birds, PH = DATA.photos, M = DATA.months;
+const BY = Object.fromEntries(BIRDS.map(b => [b.latin, b]));
+const MKEY = ["year","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+const T = {
+  ru: { title:"Птицы Фукуока", resident:"круглый год", winter:"зимует", summer:"летом",
+        all:"Все", winterOnly:"Зимуют и пролётные", summerOnly:"Гнездятся летом", residentOnly:"Круглый год",
+        months:["Весь год","Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"],
+        monthsGen:["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"],
+        monthsAria:"Месяц поездки",
+        window:(m,c,k)=> m ? `Окно: с середины ${T.ru.monthsGen[(m+10)%12+1]} до середины ${T.ru.monthsGen[m%12+1]} · ${lst(c)}, из них ${k} полных` : `Все наблюдения за три года · ${lst(c)}, из них ${k} полных`,
+        tiers:{t1:"Почти наверняка",t2:"Часто",t3:"Иногда",t4:"Редко"}, tierHints:{t1:"≥20%",t2:"8–19%",t3:"3–7%",t4:""},
+        tierLow:{t1:"почти наверняка",t2:"часто",t3:"иногда",t4:"редко"},
+        hint:"Выберите точку на карте, чтобы увидеть всех птиц, отмеченных там в этот месяц.",
+        lists:n=>lst(n), noLists:n=>`в этот месяц наблюдений нет · ${lst(n)} в другие месяцы`,
+        noListsNote:"Здесь наблюдали только в другие месяцы. Для леса это скорее пробел в данных, чем отсутствие птиц.",
+        more:n=>`и ещё ${vid(n)} — нажмите на точку, чтобы увидеть всех`, of:(k,n)=>`${k} из ${n}`, ofTitle:"в скольких списках этой точки",
+        pct:p=>`<b>${p}%</b> полных списков`, pctLow:n=>`<b>&lt;1%</b>, отмечен в ${lst(n)}`, where:"Где:", photo:"Фото", close:"Закрыть",
+        others:n=>`Ещё ${vid(n)} отмечены на острове в другие месяцы.`, showYear:"Показать весь год",
+        spotAria:(nm,w,s)=> w ? `${nm}: ${lst(w)}, ${vid(s)}` : `${nm}: в этот месяц наблюдений нет`, tiersAria:"Встречаемость", statsAria:"Статус" },
+  en: { title:"Phu Quoc Birds", resident:"resident", winter:"winter", summer:"summer",
+        all:"All", winterOnly:"Winter & passage", summerOnly:"Summer visitors", residentOnly:"Residents",
+        months:["Whole year","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+        monthsGen:["","January","February","March","April","May","June","July","August","September","October","November","December"],
+        monthsAria:"Month of the trip",
+        window:(m,c,k)=> m ? `Window: mid-${T.en.monthsGen[(m+10)%12+1]} to mid-${T.en.monthsGen[m%12+1]} · ${c} checklists, ${k} complete` : `All checklists, three years · ${c} checklists, ${k} complete`,
+        tiers:{t1:"Almost certain",t2:"Frequent",t3:"Occasional",t4:"Rare"}, tierHints:{t1:"≥20%",t2:"8–19%",t3:"3–7%",t4:""},
+        tierLow:{t1:"almost certain",t2:"frequent",t3:"occasional",t4:"rare"},
+        hint:"Pick a point on the map to see every bird recorded there this month.",
+        lists:n=>`${n} checklist${n===1?"":"s"}`, noLists:n=>`no checklists this month · ${n} in other months`,
+        noListsNote:"Checklists here come only from other months. In the forest this is a gap in the data, not a lack of birds.",
+        more:n=>`and ${n} more — tap the point to see them all`, of:(k,n)=>`${k} of ${n}`, ofTitle:"checklists at this point that report it",
+        pct:p=>`<b>${p}%</b> of complete checklists`, pctLow:n=>`<b>&lt;1%</b>, in ${n} checklist${n===1?"":"s"}`, where:"Where:", photo:"Photo", close:"Close",
+        others:n=>`${n} more species were recorded on the island in other months.`, showYear:"Show the whole year",
+        spotAria:(nm,w,s)=> w ? `${nm}: ${w} checklists, ${s} species` : `${nm}: no checklists this month`, tiersAria:"Frequency", statsAria:"Status" }
+};
+let lang = "ru", L = T.ru, month = 12;
+function plural(n, a, b, c){const m=n%10,h=n%100; if(m===1&&h!==11) return a; if(m>=2&&m<=4&&(h<10||h>=20)) return b; return c;}
+const vid = n => lang==="ru" ? `${n} ${plural(n,"вид","вида","видов")}` : `${n} species`;
+const lst = n => `${n} ${plural(n,"список","списка","списков")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bname = b => lang==="ru" ? b.name_ru : b.name_en;
+const balt = b => lang==="ru" ? b.name_en : b.name_ru;
+const pname = id => lang==="ru" ? P[id].name_ru : P[id].name_en;
+const pshort = id => lang==="ru" ? P[id].tag_ru : P[id].tag_en;
+const pct = b => b.pct[month] || 0, nlists = b => b.lists[month] || 0;
+const tierOf = b => { const p = pct(b); return p >= 20 ? "t1" : p >= 8 ? "t2" : p >= 3 ? "t3" : "t4"; };
+const spAt = id => P[id].species[month] || {};
+const ptsOf = b => Object.keys(P).filter(id => spAt(id)[b.latin]).sort((x, y) => spAt(y)[b.latin] - spAt(x)[b.latin]);
+
+const svg = document.querySelector("svg.map"), spotsG = document.getElementById("spots");
+const tip = document.getElementById("tip"), box = document.getElementById("mapbox");
+const panel = document.getElementById("spotpanel"), grid = document.getElementById("grid"), wrap = document.getElementById("wrap");
+let selSpot = null, selBird = null, tier = "all", stat = "all";
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function drawSpots(){
+  const order = Object.keys(P).sort((a, b) => (P[b].lists[month]||0) - (P[a].lists[month]||0));
+  spotsG.innerHTML = order.map(id => {
+    const p = P[id], n = p.lists[month] || 0, s = Object.keys(spAt(id)).length;
+    const r = n ? Math.min(6 + 22 * Math.sqrt(n / Math.max(M[month].checklists, 1)), 20) : 4.5;   // area ~ share of the month's checklists
+    const lbl = (txt, cls) => {
+      if (!txt) return "";
+      let dx = p.dx, dy = p.dy;
+      if (p.anchor === "middle") dy += dy > 0 ? r - 8 : -(r - 8); else dx += dx > 0 ? r - 8 : -(r - 8);
+      return `<text class="lbl ${cls}" x="${(p.x+dx).toFixed(1)}" y="${(p.y+dy+4).toFixed(1)}" text-anchor="${p.anchor}">${esc(txt)}</text>`;
+    };
+    const cls = ["spot", n ? "" : "empty", id === selSpot ? "sel" : ""].join(" ").trim();
+    return `<g class="${cls}" data-id="${id}" tabindex="0" role="button" aria-label="${esc(L.spotAria(pname(id), n, s))}">` +
+      `<circle class="halo" cx="${p.x}" cy="${p.y}" r="${(r+6).toFixed(1)}"/><circle class="ring" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>` +
+      (n ? `<text class="num" x="${p.x}" y="${p.y}">${s}</text>` : "") + lbl(p.short_ru, "ru") + lbl(p.short_en, "en") + `</g>`;
+  }).join("");
+  highlightBird();
+}
+function rowHTML(sid, k, tag, nw){
+  const b = BY[sid];
+  return `<${tag} class="row"${tag==="button"?` type="button" data-bird="${esc(sid)}"`:""}><img src="${PH[sid].src}" alt=""><span><span class="nm">${esc(bname(b))}</span><i>${esc(sid)}</i></span><span class="k" title="${L.ofTitle}">${L.of(k,nw)}</span></${tag}>`;
+}
+function spotHTML(id, tag){
+  const p = P[id], n = p.lists[month] || 0, sp = Object.entries(spAt(id));
+  const head = `<div class="panelhead"><div><h3>${esc(pname(id))}</h3><span class="meta">${n ? `${L.lists(n)} · ${vid(sp.length)}` : L.noLists(p.lists[0])}</span></div>${tag==="button"?`<button class="x" type="button" id="closeSpot" aria-label="${L.close}">✕</button>`:""}</div>`;
+  if (!n) return head + `<p class="hint">${L.noListsNote}</p>`;
+  const show = tag==="div" ? sp.slice(0,7) : sp;
+  return head + `<div class="rows">${show.map(([s,k]) => rowHTML(s,k,tag,n)).join("")}</div>` +
+    (tag==="div" && sp.length>7 ? `<p class="more">${L.more(sp.length-7)}</p>` : "");
+}
+function showTip(id, g){
+  tip.innerHTML = spotHTML(id, "div"); tip.hidden = false;
+  const r = g.getBoundingClientRect(), br = box.getBoundingClientRect();
+  const cx = r.left + r.width/2 - br.left, cy = r.top + r.height/2 - br.top;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = cx + 18; if (x + tw > br.width - 8) x = cx - tw - 18; if (x < 8) x = 8;
+  let y = cy - th/2; y = Math.max(8, Math.min(y, br.height - th - 8));
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip(){ tip.hidden = true; }
+function renderPanel(){ panel.innerHTML = selSpot ? spotHTML(selSpot, "button") : `<p class="hint">${L.hint}</p>`; }
+function selectSpot(id){
+  selSpot = id;
+  spotsG.querySelectorAll(".spot").forEach(g => g.classList.toggle("sel", g.dataset.id === id));
+  renderPanel();
+}
+function highlightBird(){
+  const b = BY[selBird], ids = b ? ptsOf(b) : [];
+  svg.classList.toggle("dim", !!b);
+  spotsG.querySelectorAll(".spot").forEach(g => g.classList.toggle("hl", ids.includes(g.dataset.id)));
+  grid.querySelectorAll(".bird").forEach(c => c.classList.toggle("on", c.dataset.bird === selBird));
+}
+function selectBird(id){ selBird = (selBird === id) ? null : id; highlightBird(); }
+function credit(sid){
+  const c = PH[sid];
+  return `${L.photo}: <a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.author)}</a>, ${c.license_url ? `<a href="${esc(c.license_url)}" target="_blank" rel="noopener">${esc(c.license)}</a>` : esc(c.license)}`;
+}
+function renderMonths(){
+  const el = document.getElementById("months"); el.setAttribute("aria-label", L.monthsAria);
+  const max = Math.max(...[1,2,3,4,5,6,7,8,9,10,11,12].map(m => M[m].checklists));
+  el.innerHTML = [1,2,3,4,5,6,7,8,9,10,11,12,0].map(m => {
+    const c = M[m].checklists, h = m ? Math.round(4 + 14 * c / max) : 0;
+    return `<button type="button" id="month-${MKEY[m]}" data-m="${m}" aria-pressed="${month===m}" class="${m?"":"wide"}" title="${L.lists(c)}">` +
+      `<span class="mn">${L.months[m]}</span>${m ? `<span class="eff" aria-hidden="true"><i style="height:${h}px"></i></span>` : ""}</button>`;
+  }).join("");
+  document.getElementById("window").textContent = L.window(month, M[month].checklists, M[month].complete);
+}
+function renderFilters(){
+  const tiers = document.getElementById("tiers"), stats = document.getElementById("stats");
+  tiers.setAttribute("aria-label", L.tiersAria); stats.setAttribute("aria-label", L.statsAria);
+  tiers.innerHTML = [["all", L.all, ""], ...["t1","t2","t3","t4"].map(t => [t, L.tiers[t], L.tierHints[t]])]
+    .map(([k, txt, h]) => `<button type="button" id="tier-${k}" data-t="${k}" aria-pressed="${tier===k}">${txt}${h?`<small>${h}</small>`:""}</button>`).join("");
+  stats.innerHTML = [["all", L.all], ["winter", L.winterOnly], ["summer", L.summerOnly], ["resident", L.residentOnly]]
+    .map(([k, txt]) => `<button type="button" id="stat-${k}" data-s="${k}" aria-pressed="${stat===k}">${txt}</button>`).join("") + `<span class="count" id="count"></span>`;
+}
+function renderGrid(){
+  const present = BIRDS.filter(b => nlists(b) > 0).sort((a, b) => pct(b) - pct(a) || nlists(b) - nlists(a));
+  const list = present.filter(b => (tier==="all" || tierOf(b)===tier) && (stat==="all" || b.status===stat));
+  document.getElementById("count").textContent = vid(list.length);
+  grid.innerHTML = list.map(b => {
+    const p = Math.round(pct(b)), pts = ptsOf(b), t = tierOf(b);
+    const where = pts.slice(0,4).map(k => `<button type="button" data-spot="${k}" title="${esc(pname(k))}: ${L.of(spAt(k)[b.latin], P[k].lists[month])}">${esc(pshort(k))}</button>`).join("")
+      + (pts.length>4 ? `<span>+${pts.length-4}</span>` : "");
+    return `<article class="bird${b.latin===selBird?" on":""}" tabindex="0" data-bird="${esc(b.latin)}" aria-label="${esc(bname(b))}">
+      <div class="ph"><img src="${PH[b.latin].src}" alt="${esc(bname(b))}, ${esc(b.latin)}" loading="lazy"><div class="chips"><b class="chip ${b.status}">${L[b.status]}</b></div></div>
+      <div class="bd"><h3>${esc(bname(b))}</h3><div class="lat">${esc(b.latin)}</div><div class="alt">${esc(balt(b))}</div>
+        <div class="freq"><div class="bar"><i style="width:${Math.max(p,1)}%"></i></div><span>${p ? L.pct(p) : L.pctLow(nlists(b))} · ${L.tierLow[t]}</span></div>
+        ${pts.length ? `<div class="where">${L.where} ${where}</div>` : ""}
+        <div class="credit">${credit(b.latin)}</div>
+      </div></article>`;
+  }).join("");
+  const rest = BIRDS.length - present.length;
+  document.getElementById("others").innerHTML = month && rest ? `${L.others(rest)} <button type="button" id="showYear">${L.showYear}</button>` : "";
+  highlightBird();
+}
+function renderAll(){ renderMonths(); drawSpots(); renderFilters(); renderGrid(); renderPanel(); hideTip(); }
+function setLang(l){
+  lang = l; L = T[lang];
+  wrap.dataset.lang = lang; document.documentElement.lang = lang; document.title = L.title;
+  document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+}
+function readHash(){
+  const parts = location.hash.slice(1).toLowerCase().split("-");
+  const l = parts.find(x => x === "ru" || x === "en") || ((navigator.language || "").toLowerCase().startsWith("ru") ? "ru" : "en");
+  const mk = parts.find(x => MKEY.includes(x));
+  return { l, m: mk ? MKEY.indexOf(mk) : new Date().getMonth() + 1 };
+}
+function writeHash(){ location.hash = `${lang}-${MKEY[month]}`; }
+
+spotsG.addEventListener("pointerover", e => { const g = e.target.closest(".spot"); if (g && e.pointerType === "mouse") showTip(g.dataset.id, g); });
+spotsG.addEventListener("pointerout", e => { const g = e.target.closest(".spot"); if (g && !g.contains(e.relatedTarget)) hideTip(); });
+spotsG.addEventListener("focusin", e => { const g = e.target.closest(".spot"); if (g && g.matches(":focus-visible")) showTip(g.dataset.id, g); });
+spotsG.addEventListener("focusout", hideTip);
+spotsG.addEventListener("click", e => { const g = e.target.closest(".spot"); if (!g) return; hideTip(); selectSpot(selSpot === g.dataset.id ? null : g.dataset.id); });
+spotsG.addEventListener("keydown", e => { const g = e.target.closest(".spot"); if (g && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); hideTip(); selectSpot(g.dataset.id); } });
+panel.addEventListener("click", e => {
+  if (e.target.closest("#closeSpot")) { selectSpot(null); return; }
+  const r = e.target.closest("[data-bird]"); if (!r) return;
+  const b = BY[r.dataset.bird];
+  if ((tier!=="all" && tierOf(b)!==tier) || (stat!=="all" && b.status!==stat)) { tier = "all"; stat = "all"; renderFilters(); renderGrid(); }
+  if (selBird !== b.latin) selectBird(b.latin);
+  const c = grid.querySelector(`.bird[data-bird="${CSS.escape(b.latin)}"]`);
+  if (c) c.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"center"});
+});
+grid.addEventListener("click", e => {
+  const sb = e.target.closest("[data-spot]");
+  if (sb){ e.stopPropagation(); selectSpot(sb.dataset.spot); if (matchMedia("(max-width:900px)").matches) box.scrollIntoView({behavior:"smooth", block:"start"}); return; }
+  if (e.target.closest("a")) return;
+  const c = e.target.closest(".bird"); if (c) selectBird(c.dataset.bird);
+});
+grid.addEventListener("keydown", e => { const c = e.target.closest(".bird"); if (c && e.target === c && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); selectBird(c.dataset.bird); } });
+document.getElementById("tiers").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b){ tier = b.dataset.t; renderFilters(); renderGrid(); } });
+document.getElementById("stats").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (b){ stat = b.dataset.s; renderFilters(); renderGrid(); } });
+document.getElementById("months").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (b){ month = +b.dataset.m; writeHash(); } });
+document.getElementById("others").addEventListener("click", e => { if (e.target.closest("#showYear")){ month = 0; writeHash(); } });
+document.querySelectorAll(".langs button").forEach(b => b.addEventListener("click", () => { lang = b.dataset.lang; writeHash(); }));
+addEventListener("hashchange", () => { const h = readHash(); setLang(h.l); month = h.m; renderAll(); });
+{ const h = readHash(); setLang(h.l); month = h.m; renderAll(); }
+</script>

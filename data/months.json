@@ -1,0 +1,58 @@
+{
+ "source": "eBird Basic Dataset, EBD_relSep-2026, Cornell Lab of Ornithology",
+ "window": "calendar month ± half a month; 0 = whole year",
+ "months": {
+  "0": {
+   "checklists": 442,
+   "complete": 301
+  },
+  "1": {
+   "checklists": 139,
+   "complete": 76
+  },
+  "2": {
+   "checklists": 88,
+   "complete": 45
+  },
+  "3": {
+   "checklists": 67,
+   "complete": 44
+  },
+  "4": {
+   "checklists": 48,
+   "complete": 38
+  },
+  "5": {
+   "checklists": 42,
+   "complete": 33
+  },
+  "6": {
+   "checklists": 59,
+   "complete": 49
+  },
+  "7": {
+   "checklists": 57,
+   "complete": 48
+  },
+  "8": {
+   "checklists": 57,
+   "complete": 44
+  },
+  "9": {
+   "checklists": 47,
+   "complete": 35
+  },
+  "10": {
+   "checklists": 77,
+   "complete": 57
+  },
+  "11": {
+   "checklists": 90,
+   "complete": 65
+  },
+  "12": {
+   "checklists": 113,
+   "complete": 68
+  }
+ }
+}
