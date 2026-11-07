@@ -48,7 +48,7 @@ The raw eBird files are **not** included: the eBird terms of use do not allow re
 
    ```
    python scripts/analyze.py --ebd raw/ebd_VN_..._relSep-2026.txt --sampling raw/ebd_VN_..._relSep-2026_sampling.txt
-   python scripts/build_page.py --repo https://github.com/LenaDrozd/phu-quoc-birds
+   python scripts/build_page.py --repo https://github.com/LenaDrozd/phu-quoc-birds --site https://lenadrozd.github.io/phu-quoc-birds/
    ```
 
 Put the downloads in `raw/`; that folder is ignored by git.

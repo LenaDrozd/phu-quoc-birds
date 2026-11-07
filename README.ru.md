@@ -48,7 +48,7 @@ scripts/template.html      шаблон страницы
 
    ```
    python scripts/analyze.py --ebd raw/ebd_VN_..._relSep-2026.txt --sampling raw/ebd_VN_..._relSep-2026_sampling.txt
-   python scripts/build_page.py --repo https://github.com/LenaDrozd/phu-quoc-birds
+   python scripts/build_page.py --repo https://github.com/LenaDrozd/phu-quoc-birds --site https://lenadrozd.github.io/phu-quoc-birds/
    ```
 
 Выгрузку положите в папку `raw/` — git её не видит.

@@ -2,7 +2,7 @@
 
     python scripts/build_page.py                    -> index.html (photos loaded from photos/)
     python scripts/build_page.py --inline -o x.html -> one self-contained file with embedded photos
-    python scripts/build_page.py --repo https://github.com/<user>/phu-quoc-birds
+    python scripts/build_page.py --repo https://github.com/<user>/phu-quoc-birds --site https://<user>.github.io/phu-quoc-birds/
 
 Inputs: data/species_by_month.csv, data/points.json, data/months.json,
         data/photo_credits.json, data/island_outline.json, scripts/template.html
@@ -81,6 +81,7 @@ def main():
     ap.add_argument("--inline", action="store_true", help="embed photos as data URIs")
     ap.add_argument("--fragment", action="store_true", help="omit <!doctype>/<html>/<head> wrapper")
     ap.add_argument("--repo", default="", help="repository URL for the footer link")
+    ap.add_argument("--site", default="", help="public URL of the page, for link previews (og:image)")
     a = ap.parse_args()
 
     points = json.load(open(DATA / "points.json"))
@@ -118,6 +119,14 @@ def main():
     if not a.fragment:
         i = html.index('<div class="wrap"')
         head = html[:i].replace('<meta name="claude:viewport-fit-sides" content="cover">\n', "")
+        if a.site:
+            img = a.site.rstrip("/") + "/docs/social-preview.png"
+            head += ('<meta property="og:type" content="website">\n'
+                     '<meta property="og:title" content="Phu Quoc Birds · Птицы Фукуока">\n'
+                     '<meta property="og:description" content="Which birds you can see on Phu Quoc island in any month: an interactive map from eBird data.">\n'
+                     f'<meta property="og:url" content="{a.site}">\n<meta property="og:image" content="{img}">\n'
+                     '<meta property="og:image:width" content="1280">\n<meta property="og:image:height" content="640">\n'
+                     '<meta name="twitter:card" content="summary_large_image">\n')
         html = ('<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n'
                 '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
                 + head + '</head>\n<body>\n' + html[i:] + '\n</body>\n</html>\n')
